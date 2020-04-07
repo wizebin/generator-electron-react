@@ -1,0 +1,45 @@
+{
+    "env": {
+        "node": true,
+        "es6": true,
+        "jest": true
+    },
+    "extends": ["eslint:recommended", "plugin:react/recommended"],
+    "globals": {
+        "Atomics": "readonly",
+        "SharedArrayBuffer": "readonly",
+        "document": "readonly"
+    },
+    "parser": "babel-eslint",
+    "parserOptions": {
+        "ecmaVersion": 2018,
+        "sourceType": "module"
+    },
+    "plugins": [
+        "jest",
+        "react"
+    ],
+    "rules": {
+        "max-len": "off",
+        "brace-style": ["error", "1tbs"],
+        "block-spacing": "error",
+        "comma-dangle": ["error", "only-multiline"],
+        "key-spacing": ["error", { "beforeColon": false }],
+        "keyword-spacing": ["error", { "before": true, "after": true }],
+        "semi": ["error", "always"],
+        "quotes": ["error", "single"],
+        "indent": ["error", 2],
+        "eqeqeq": "error",
+        "require-await": "error",
+        "no-extend-native": "error",
+        "no-multi-spaces": "error",
+        "no-loop-func": "error",
+        "no-sequences": "error",
+        "no-return-await": "error",
+        "no-extra-bind": "error",
+        "space-infix-ops": "error",
+        "space-before-blocks": ["error", "always"],
+        "array-bracket-spacing": ["error", "never"],
+        "object-curly-spacing": ["error", "always"]
+    }
+}

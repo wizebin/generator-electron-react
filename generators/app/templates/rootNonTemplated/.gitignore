@@ -1,0 +1,8 @@
+node_modules/
+*.hot-update.js
+*.hot-update.json
+/release/
+yarn-error.log
+/.env
+/dist/
+.DS_Store
