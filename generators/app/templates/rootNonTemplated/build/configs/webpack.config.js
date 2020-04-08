@@ -2,6 +2,9 @@ const path = require('path');
 const webpack = require('webpack');
 const dotenv = require('dotenv-webpack');
 const HtmlWebPackPlugin = require("html-webpack-plugin");
+const packagejson = require('../../package.json');
+const { dependencies } = packagejson;
+const externals = Object.keys(dependencies);
 
 const basePlugins = [];
 const runtime = process.env.AS_WEB ? 'web' : 'electron';
@@ -18,8 +21,8 @@ if (!process.env.AS_WEB) {
     'clipboard',
     'crash-reporter',
     'screen',
-    'shell'
-  ]));
+    'shell',
+  ].concat(externals)));
 }
 
 const baseEntry = path.resolve(path.join(__dirname, '..', '..', 'src', 'index.js'));

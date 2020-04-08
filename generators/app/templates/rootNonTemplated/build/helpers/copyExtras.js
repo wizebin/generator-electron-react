@@ -27,7 +27,7 @@ function copyNodeModules() {
     const itemPath = path.join(nodeModulePath, item) + '/';
 
     if (!fs.existsSync(itemPath)) {
-      fs.copySync(path.join(root, 'node_modules', item), itemPath);
+      fs.copySync(path.join(root, 'node_modules', item), itemPath, { dereference: true });
     }
   });
 }
