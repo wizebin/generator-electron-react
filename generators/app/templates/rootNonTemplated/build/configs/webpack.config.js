@@ -27,7 +27,7 @@ const baseOutputFolder = path.resolve(path.join(__dirname, '..', '..', 'dist'));
 const baseMainFolder = path.resolve(path.join(__dirname, '..', '..', 'electron'));
 const rendererSubfolder = path.join('renderer');
 const rendererOutputFolder = path.join(baseOutputFolder, rendererSubfolder);
-const loaderPattern = path.posix.join('fonts', '[name].[ext]');
+const loaderPattern = path.posix.join('assets', '[name].[ext]');
 
 module.exports = {
   entry: baseEntry,
@@ -45,13 +45,11 @@ module.exports = {
           'css-loader'
         ]
       }, {
-        test: /\.(woff|woff2|eot|ttf|svg)$/,
+        test: /\.(woff|woff2|eot|ttf|svg|png|jpg|jpeg|mp3|mp4)$/,
         use: {
           loader: 'file-loader',
           options: {
             name: loaderPattern,
-            publicPath: './renderer',
-            // context: './renderer',
             limit: 10000,
             mimetype: 'application/font-woff'
           }
