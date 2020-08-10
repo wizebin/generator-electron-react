@@ -1,6 +1,6 @@
 {
   "name": "generator-electron-react",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Generate new electron apps",
   "keywords": [
     "yeoman-generator",
