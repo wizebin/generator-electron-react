@@ -3,11 +3,13 @@ const webpack = require('webpack');
 const dotenv = require('dotenv-webpack');
 const HtmlWebPackPlugin = require("html-webpack-plugin");
 const packagejson = require('../../package.json');
-const { dependencies } = packagejson;
-const externals = Object.keys(dependencies);
+const nodeExternals = require('webpack-node-externals');
 
 const basePlugins = [];
 const runtime = process.env.AS_WEB ? 'web' : 'electron';
+const calculatedExternals = nodeExternals({
+  allowlist: [/(?<!(js|jsx))$/i], // anything that is not javascript, using lookbehind
+});
 
 if (!process.env.AS_WEB) {
   basePlugins.push(new webpack.ExternalsPlugin('commonjs', [
@@ -22,7 +24,7 @@ if (!process.env.AS_WEB) {
     'crash-reporter',
     'screen',
     'shell',
-  ].concat(externals)));
+  ].concat(calculatedExternals)));
 }
 
 const baseEntry = path.resolve(path.join(__dirname, '..', '..', 'src', 'index.js'));
