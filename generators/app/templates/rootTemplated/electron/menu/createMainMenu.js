@@ -1,4 +1,4 @@
-import { Menu, shell } from 'electron';
+import { Menu, shell, app } from 'electron';
 import { checkForAppUpdate } from '../utilities/update';
 import { isWindows } from '../utilities/platform';
 import packageJson from '../../package.json';
@@ -23,6 +23,7 @@ export default function createMainMenu() {
     label: 'Help',
     submenu: [
       { label: 'Website', click: () => shell.openExternal('<%= homepage %>') },
+      { label: 'Relaunch', click: () => { app.relaunch(); app.exit(0) } },
       { label: `Version ${packageJson.version}`, click: checkForAppUpdate },
     ]
   }]);

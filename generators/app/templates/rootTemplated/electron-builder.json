@@ -1,7 +1,7 @@
 {
   "productName": "<%= name %>",
   "appId": "com.<%= name %>",
-  "asar": true,
+  "asar": <%= use_asar_bool %>,
   "files": [
     "**/dist/**",
     "package.json",

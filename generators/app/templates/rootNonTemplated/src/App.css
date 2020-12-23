@@ -1,5 +1,7 @@
 * {
   font-family: Roboto, sans-serif;
+  box-sizing: border-box;
+  position: relative;
 }
 
 html, body, div#root {
@@ -7,11 +9,6 @@ html, body, div#root {
   height: 100%;
   padding: 0px;
   margin: 0px;
-}
-
-div, span {
-  box-sizing: border-box;
-  position: relative;
 }
 
 h1, h2, h3, h4, h5, h6, p {

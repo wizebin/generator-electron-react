@@ -13,6 +13,18 @@ export default class MainApp {
   subwindows = {};
   tray = null;
 
+  loadUrlWhenAvailable = async (indexPath, maxRetries = 50, timeoutPerRetry = 100) => {
+    for (let dex = 0; dex < maxRetries; dex += 1) {
+      try {
+        await this.mainwindow?.loadURL(indexPath);
+        break;
+      } catch (err) {
+        console.log('failed to load main url (probably still initializing)');
+        await new Promise(resolve => setTimeout(resolve, timeoutPerRetry));
+      }
+    }
+  }
+
   createMainWindow = (indexPath = process.env.HTML_SERVER_URL) => {
     if (this.mainwindow) {
       return this.mainwindow;
@@ -33,7 +45,7 @@ export default class MainApp {
 
     this.mainwindow.uuid = uuid();
     if (indexPath) {
-      this.mainwindow.loadURL(indexPath);
+      this.loadUrlWhenAvailable(indexPath);
     } else {
       const htmlPath = path.join(getDistPath(), 'renderer', 'index.html');
       if (!fs.existsSync(htmlPath)) {

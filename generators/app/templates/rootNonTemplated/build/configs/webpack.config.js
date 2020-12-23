@@ -104,7 +104,7 @@ module.exports = {
   devServer: {
     contentBase: rendererOutputFolder,
     hot: true,
-    port: 9998,
+    port: 10113,
   },
   target: process.env.AS_WEB ? undefined : 'electron-renderer',
 };

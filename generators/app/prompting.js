@@ -45,11 +45,18 @@ function _prompting() {
       name: 'install',
       message: 'Install dependencies',
       default: true
+    }, {
+      type: 'confirm',
+      name: 'use_asar_bool',
+      message: 'Use ASAR? (kinda sucks)',
+      default: false
     }]),
           install = _ref.install,
-          main = _ref.main;
+          main = _ref.main,
+          use_asar_bool = _ref.use_asar_bool;
 
     yo.answers.install = install;
+    yo.answers.use_asar_bool = use_asar_bool;
     yo.answers.main = main;
     yo.context = _objectSpread({}, yo.context, {}, yo.answers);
   });
