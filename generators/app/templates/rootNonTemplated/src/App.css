@@ -1,16 +1,57 @@
 * {
-  font-family: Roboto, sans-serif;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  padding: 0px;
+  margin: 0px;
+  font-family: 'Roboto', Arial, Helvetica, sans-serif;
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+div, span, h1, h2, h3, h4, h5, h6, img, input, button, textarea, p {
   box-sizing: border-box;
   position: relative;
 }
 
-html, body, div#root {
-  width: 100%;
-  height: 100%;
-  padding: 0px;
+h1, h2, h3, h4, h5, h6, p {
   margin: 0px;
 }
 
-h1, h2, h3, h4, h5, h6, p {
-  margin: 0px;
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-animation: autofill 0s forwards;
+    animation: autofill 0s forwards;
+}
+
+@keyframes autofill {
+    100% {
+        background: rgba(255,255,255,.2);
+        color: inherit;
+    }
+}
+
+@-webkit-keyframes autofill {
+    100% {
+        background: rgba(255,255,255,.2);
+        color: inherit;
+    }
+}
+
+input:focus, button:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(200,200,200,.6);
+}
+
+a {
+  color: inherit;
 }
