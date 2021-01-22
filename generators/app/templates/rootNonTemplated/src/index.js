@@ -12,3 +12,7 @@ if (!document.getElementById('root')) {
 }
 
 ReactDOM.render(<AppView />, document.getElementById('root'));
+
+window.addEventListener('beforeunload', () => {
+  ReactDOM.unmountComponentAtNode(document.getElementById('root'));
+});

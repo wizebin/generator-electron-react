@@ -11,7 +11,19 @@ module.exports = {
       {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
-        use: ['babel-loader']
+        use: [{
+          loader: 'babel-loader',
+          options: { // using options here instead of using the root babelrc so we can have a different configuration
+            presets: [[
+              "@babel/preset-env", { targets: { electron: "12" } }],
+              "@babel/preset-react"
+            ],
+            plugins: [
+              "@babel/plugin-proposal-class-properties",
+              "@babel/plugin-proposal-optional-chaining"
+            ]
+          }
+        }]
       }
     ]
   },

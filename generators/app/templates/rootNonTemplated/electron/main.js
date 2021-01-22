@@ -2,6 +2,14 @@ import { app, dialog } from 'electron';
 
 import MainApp from './app/MainApp';
 import { isMac } from './utilities/platform';
+import { searchArgvForUrl } from './utilities/searchArgvForUrl';
+import { initialize as initializeRemote } from '@electron/remote/main';
+
+if (!app.requestSingleInstanceLock()) {
+  app.quit();
+}
+
+initializeRemote();
 
 const mainApp = new MainApp();
 
@@ -19,6 +27,10 @@ app.on('window-all-closed', () => {
 
 app.on('activate', () => {
   mainApp.createOrShowMainWindow();
+});
+
+app.on('second-instance', (event, secondInstanceArgv, workingDirectory) => {
+  mainApp.createOrShowMainWindow(searchArgvForUrl(secondInstanceArgv));
 });
 
 process.on('uncaughtException', function (err) {

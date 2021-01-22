@@ -60,5 +60,11 @@
     "output": "release",
     "app": "./"
   },
+  "protocols": {
+    "name": "<%= name %>",
+    "schemes": [
+      "<%= name %>"
+    ]
+  },
   "afterSign": "./build/helpers/notarize.js"
 }

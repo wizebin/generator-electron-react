@@ -7,11 +7,15 @@ import { isWindows } from '../utilities/platform';
 import { autoUpdater } from 'electron-updater';
 import createMainMenu from '../menu/createMainMenu';
 import { checkForAppUpdate } from '../utilities/update';
+import builderJson from '../../electron-builder.json';
+import { searchArgvForUrl } from '../utilities/searchArgvForUrl';
+import { relaunchMain } from '../utilities/relaunchMain';
 
 export default class MainApp {
   mainwindow = null;
   subwindows = {};
   tray = null;
+  deepLinkUrl = null;
 
   loadUrlWhenAvailable = async (indexPath, maxRetries = 50, timeoutPerRetry = 100) => {
     for (let dex = 0; dex < maxRetries; dex += 1) {
@@ -25,15 +29,47 @@ export default class MainApp {
     }
   }
 
+  initializeDeepLinking = (linkProtocol) => {
+    const protocolToUse = linkProtocol || builderJson?.protocols?.schemes?.[0];
+    if (!app.isDefaultProtocolClient(protocolToUse)) {
+      app.setAsDefaultProtocolClient(protocolToUse);
+    }
+
+    const foundDeepLink = searchArgvForUrl(process.argv);
+    if (foundDeepLink) {
+      this.onDeepLinkUrl(foundDeepLink);
+    }
+    app.on('open-url', (event, url) => {
+      event.preventDefault();
+      this.onDeepLinkUrl(url);
+    });
+  }
+
+  onDeepLinkUrl = (url) => {
+    this.deepLinkUrl = url;
+    this.sendDeepLinkUrl();
+  }
+
+  sendDeepLinkUrl = (url) => {
+    if (this.appReady) {
+      this.sendMessageToMainWindow('deep-link', url || this.deepLinkUrl);
+      return true;
+    }
+
+    return false;
+  }
+
   createMainWindow = (indexPath = process.env.HTML_SERVER_URL) => {
     if (this.mainwindow) {
       return this.mainwindow;
     }
 
+    this.initializeDeepLinking();
+
     this.mainwindow = new BrowserWindow({
       width: 900,
       height: 600,
-      webPreferences: { nodeIntegration: true },
+      webPreferences: { nodeIntegration: true, enableRemoteModule: true, worldSafeExecuteJavaScript: true, contextIsolation: false },
       show: false, // wait until page is loaded
     });
 
@@ -41,6 +77,34 @@ export default class MainApp {
 
     this.mainwindow.once('ready-to-show', () => {
       this.mainwindow.show();
+    });
+
+    this.mainwindow.webContents.on('ipc-message', this.onIpcMessageFromRenderer);
+
+    this.mainwindow.on('render-process-gone', (event, details) => {
+      const { reason } = details;
+
+      console.log('renderer process gone', reason);
+
+      const descriptions = {
+        'clean-exit': 'Process exited with an exit code of zero',
+        'abnormal-exit': 'Process exited with a non-zero exit code',
+        'killed': 'Process was sent a SIGTERM or otherwise killed externally',
+        'crashed': 'Process crashed',
+        'oom': 'Process ran out of memory',
+        'launch-failed': 'Process never successfully launched',
+        'integrity-failure': 'Windows code integrity checks failed',
+      };
+
+      const badSet = new Set(['abnormal-exit', 'crashed', 'oom', 'launch-failed', 'integrity-failure']);
+
+      if (badSet.has(reason)) {
+        dialog.showMessageBox({ type: 'error', title: descriptions[reason], buttons: ['Relaunch', 'Exit'] }).then((buttonIndex) => {
+          if (buttonIndex === 0) {
+            relaunchMain();
+          }
+        });
+      }
     });
 
     this.mainwindow.uuid = uuid();
@@ -64,12 +128,17 @@ export default class MainApp {
     }
 
     this.mainwindow.on('closed', () => {
+      this.appReady = false;
       this.mainwindow = null;
     });
     return this.mainwindow;
   }
 
-  createOrShowMainWindow = () => {
+  createOrShowMainWindow = (deepLinkUrl) => {
+    if (deepLinkUrl) {
+      this.onDeepLinkUrl(deepLinkUrl);
+    }
+
     if (!this.mainwindow) {
       this.createMainWindow();
     } else {
@@ -92,6 +161,17 @@ export default class MainApp {
   sendMessageToMainWindow = (type, data) => {
     if (this.mainwindow) {
       this.mainwindow.webContents.send(type, data);
+      return true;
+    }
+
+    return false;
+  }
+
+  onIpcMessageFromRenderer = (event, channel, ...args) => {
+    console.log('got ipc message in main', channel);
+    if (channel === 'app-ready') {
+      this.appReady = true;
+      this.sendDeepLinkUrl();
     }
   }
 
