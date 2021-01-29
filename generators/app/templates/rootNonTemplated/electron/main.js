@@ -33,6 +33,10 @@ app.on('second-instance', (event, secondInstanceArgv, workingDirectory) => {
   mainApp.createOrShowMainWindow(searchArgvForUrl(secondInstanceArgv));
 });
 
+app.on('will-finish-launching', () => {
+  mainApp.initializeDeepLinking();
+});
+
 process.on('uncaughtException', function (err) {
   const messageBoxOptions = { type: 'error', title: 'Error in Main process', message: err.stack || 'Unknown error' };
   dialog.showMessageBox(messageBoxOptions).then(() => {
