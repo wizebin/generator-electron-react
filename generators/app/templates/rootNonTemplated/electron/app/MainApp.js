@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import getDistPath from '../utilities/getDistPath';
 import { BrowserWindow, app, dialog } from 'electron';
-import uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
 import { isWindows } from '../utilities/platform';
 import { autoUpdater } from 'electron-updater';
 import createMainMenu from '../menu/createMainMenu';

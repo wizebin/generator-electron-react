@@ -31,7 +31,7 @@
     "webpack-main": "webpack --config ./build/configs/webpack.electron.js --mode development",
     "webpack-renderer-watch": "webpack --config ./build/configs/webpack.config.js --mode production --watch",
     "webpack-main-watch": "webpack --config ./build/configs/webpack.electron.js --mode development --watch",
-    "webpack-renderer-hot": "cross-env START_HOT=true NODE_ENV=development webpack-dev-server --hot --mode development --config ./build/configs/webpack.config.js",
+    "webpack-renderer-hot": "cross-env START_HOT=true NODE_ENV=development webpack serve --hot --mode development --config ./build/configs/webpack.config.js",
     "webpack-renderer": "webpack --config ./build/configs/webpack.config.js --mode production",
     "webpack-renderer-for-packaging": "cross-env PACKAGING=true webpack --config ./build/configs/webpack.config.js --mode production",
     "main-start": "cross-env NODE_ENV=development electron -r @babel/register ./dist/electronMain.js",
