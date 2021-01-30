@@ -1,13 +1,14 @@
 const path = require('path');
 const webpack = require('webpack');
 const HtmlWebPackPlugin = require("html-webpack-plugin");
-const packagejson = require('../../package.json');
 const nodeExternals = require('webpack-node-externals');
 
 const basePlugins = [];
 const runtime = process.env.AS_WEB ? 'web' : 'electron';
+const importableFileExtensions = /\.(woff|woff2|eot|ttf|svg|png|jpg|jpeg|mp3|mp4)$/;
 const calculatedExternals = nodeExternals({
-  allowlist: [/(?<!(js|jsx))$/i], // anything that is not javascript, using lookbehind
+  modulesDir: path.join(__dirname, '..', '..', 'node_modules'),
+  allowlist: [/.css/i, /monaco/i, importableFileExtensions], // HAVE A NODE MODULE THAT ISN'T WORKING? TRY ADDING IT TO THIS ALLOW LIST BY NAME /NAME_OF_MODULE/i
 });
 
 if (!process.env.AS_WEB) {
@@ -75,7 +76,7 @@ module.exports = {
         ],
         exclude: /\.module\.css$/
       }, {
-        test: /\.(woff|woff2|eot|ttf|svg|png|jpg|jpeg|mp3|mp4)$/,
+        test: importableFileExtensions,
         use: {
           loader: 'file-loader',
           options: {
