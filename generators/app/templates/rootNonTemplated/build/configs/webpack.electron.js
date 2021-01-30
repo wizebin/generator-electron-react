@@ -1,6 +1,5 @@
 const path = require('path');
 const webpack = require('webpack');
-const dotenv = require('dotenv-webpack');
 const packagejson = require('../../package.json');
 const { dependencies: externals } = packagejson;
 
@@ -36,9 +35,6 @@ module.exports = {
     filename: 'electronMain.js',
     libraryTarget: 'commonjs2'
   },
-  plugins: [
-    new dotenv(path.join(__dirname, '../../.env')),
-  ],
   node: {
     __dirname: false,
     __filename: false

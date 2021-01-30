@@ -1,6 +1,5 @@
 const path = require('path');
 const webpack = require('webpack');
-const dotenv = require('dotenv-webpack');
 const HtmlWebPackPlugin = require("html-webpack-plugin");
 const packagejson = require('../../package.json');
 const nodeExternals = require('webpack-node-externals');
@@ -104,7 +103,6 @@ module.exports = {
     filename: 'bundle.js'
   },
   plugins: basePlugins.concat([
-    new dotenv(path.join(__dirname, '../../.env')),
     new webpack.EnvironmentPlugin({
       'NODE_ENV': process.env.NODE_ENV,
       'RUNTIME': runtime,
