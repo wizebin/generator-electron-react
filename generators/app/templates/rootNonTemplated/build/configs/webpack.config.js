@@ -8,7 +8,7 @@ const runtime = process.env.AS_WEB ? 'web' : 'electron';
 const importableFileExtensions = /\.(woff|woff2|eot|ttf|svg|png|jpg|jpeg|mp3|mp4)$/;
 const calculatedExternals = nodeExternals({
   modulesDir: path.join(__dirname, '..', '..', 'node_modules'),
-  allowlist: [/.css/i, /monaco/i, importableFileExtensions], // HAVE A NODE MODULE THAT ISN'T WORKING? TRY ADDING IT TO THIS ALLOW LIST BY NAME /NAME_OF_MODULE/i
+  allowlist: [/\./i, /monaco/i], // HAVE A NODE MODULE THAT ISN'T WORKING? TRY ADDING IT TO THIS ALLOW LIST BY NAME /NAME_OF_MODULE/i
 });
 
 if (!process.env.AS_WEB) {

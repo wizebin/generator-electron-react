@@ -1,17 +1,27 @@
 import path from 'path';
 import fs from 'fs-extra';
-import packagejson from '../../package.json';
+import copyNodeModules from 'copy-node-modules';
+
+function copyNodeModulesAsync(source, destination, options) {
+  return new Promise((resolve, reject) => {
+    copyNodeModules(source, destination, options, (err, results) => {
+      if (err) reject(err);
+      else (resolve(results));
+    });
+  })
+}
 
 const root = path.resolve(path.join(__dirname, '..', '..'));
-const resourcesPath = path.join(root, 'dist', 'resources');
-const resultPath = path.join(root, 'dist', 'index.html');
-const nodeModulePath = path.join(root, 'dist', 'node_modules');
+const distPath = path.join(root, 'dist');
+const resourcesPath = path.join(distPath, 'resources');
+const resultPath = path.join(distPath, 'index.html');
+const nodeModulePath = path.join(distPath, 'node_modules');
 
 function makeBaseDirectories() {
-  const basesToCheck = [resultPath, resourcesPath, nodeModulePath];
+  const basesToCheck = [path.dirname(resultPath), resourcesPath, nodeModulePath];
 
   for (let dex = 0; dex < basesToCheck.length; dex += 1) {
-    const folder = path.dirname(basesToCheck[dex]);
+    const folder = basesToCheck[dex];
     if (!fs.existsSync(folder)) {
       fs.mkdirSync(folder, { recursive: true });
     }
@@ -22,16 +32,6 @@ function copyResources() {
   fs.copySync(path.join(root, 'electron', 'resources'), resourcesPath);
 }
 
-function copyNodeModules() {
-  Object.keys(packagejson.dependencies).map(item => {
-    const itemPath = path.join(nodeModulePath, item) + '/';
-
-    if (!fs.existsSync(itemPath)) {
-      fs.copySync(path.join(root, 'node_modules', item), itemPath, { dereference: true });
-    }
-  });
-}
-
 makeBaseDirectories();
 copyResources();
-copyNodeModules();
+copyNodeModulesAsync(root, distPath, { devDependencies: false });
