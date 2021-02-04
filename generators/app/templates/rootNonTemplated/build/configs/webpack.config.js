@@ -1,15 +1,10 @@
 const path = require('path');
 const webpack = require('webpack');
-const HtmlWebPackPlugin = require("html-webpack-plugin");
-const nodeExternals = require('webpack-node-externals');
+const HtmlWebPackPlugin = require('html-webpack-plugin');
+const packagejson = require('../../package.json');
 
 const basePlugins = [];
 const runtime = process.env.AS_WEB ? 'web' : 'electron';
-const importableFileExtensions = /\.(woff|woff2|eot|ttf|svg|png|jpg|jpeg|mp3|mp4)$/;
-const calculatedExternals = nodeExternals({
-  modulesDir: path.join(__dirname, '..', '..', 'node_modules'),
-  allowlist: [/\./i, /monaco/i], // HAVE A NODE MODULE THAT ISN'T WORKING? TRY ADDING IT TO THIS ALLOW LIST BY NAME /NAME_OF_MODULE/i
-});
 
 if (!process.env.AS_WEB) {
   basePlugins.push(new webpack.ExternalsPlugin('commonjs', [
@@ -24,7 +19,8 @@ if (!process.env.AS_WEB) {
     'crash-reporter',
     'screen',
     'shell',
-  ].concat(calculatedExternals)));
+    // ADD ANY MODULES THAT MUST REMAIN UNBUNDLED HERE
+  ].concat(Object.keys(packagejson.dependencies))));
 }
 
 const baseEntry = path.resolve(path.join(__dirname, '..', '..', 'src', 'index.js'));
@@ -46,7 +42,7 @@ module.exports = {
           loader: 'babel-loader',
           options: { // using options here instead of using the root babelrc so we can have a different configuration
             presets: [[
-              "@babel/preset-env", { targets: { chrome: "58" } }],
+              "@babel/preset-env", { targets: { electron: "12" } }],
               "@babel/preset-react"
             ],
             plugins: [
@@ -76,7 +72,7 @@ module.exports = {
         ],
         exclude: /\.module\.css$/
       }, {
-        test: importableFileExtensions,
+        test: /\.(woff|woff2|eot|ttf|svg|png|jpg|jpeg|mp3|mp4)$/,
         use: {
           loader: 'file-loader',
           options: {
@@ -118,5 +114,6 @@ module.exports = {
     hot: true,
     port: 10113,
   },
+  devtool: 'source-map',
   target: process.env.AS_WEB ? undefined : 'electron-renderer',
 };
