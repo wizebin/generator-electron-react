@@ -3,11 +3,11 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = prompting;
+exports["default"] = prompting;
 
 var _yoBasePrompts = _interopRequireDefault(require("yo-base-prompts"));
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
@@ -24,63 +24,87 @@ function prompting(_x) {
 }
 
 function _prompting() {
-  _prompting = _asyncToGenerator(function* (yo) {
-    const yoBasePrompts = new _yoBasePrompts.default(yo);
-    yo.answers = yield yoBasePrompts.prompt({
-      authorEmail: true,
-      authorName: true,
-      authorUrl: true,
-      description: true,
-      destination: true,
-      githubUsername: true,
-      homepage: true,
-      license: true,
-      name: true,
-      repository: true,
-      version: true
-    });
+  _prompting = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(yo) {
+    var yoBasePrompts, _yield$yo$optionOrPro, install, main, use_asar_bool, github_action_publish, _yield$yo$optionOrPro2, bucket;
 
-    const _yield$yo$optionOrPro = yield yo.optionOrPrompt([{
-      type: 'confirm',
-      name: 'install',
-      message: 'Install dependencies',
-      default: true
-    }, {
-      type: 'confirm',
-      name: 'use_asar_bool',
-      message: 'Use ASAR? (kinda sucks)',
-      default: false
-    }, {
-      type: 'confirm',
-      name: 'github_action_publish',
-      message: 'Include github publish script?',
-      default: false
-    }]),
-          install = _yield$yo$optionOrPro.install,
-          main = _yield$yo$optionOrPro.main,
-          use_asar_bool = _yield$yo$optionOrPro.use_asar_bool,
-          github_action_publish = _yield$yo$optionOrPro.github_action_publish;
+    return regeneratorRuntime.wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            yoBasePrompts = new _yoBasePrompts["default"](yo);
+            _context.next = 3;
+            return yoBasePrompts.prompt({
+              authorEmail: true,
+              authorName: true,
+              authorUrl: true,
+              description: true,
+              destination: true,
+              githubUsername: true,
+              homepage: true,
+              license: true,
+              name: true,
+              repository: true,
+              version: true
+            });
 
-    yo.answers.install = install;
-    yo.answers.use_asar_bool = use_asar_bool;
-    yo.answers.github_action_publish = github_action_publish;
-    yo.answers.main = main;
+          case 3:
+            yo.answers = _context.sent;
+            _context.next = 6;
+            return yo.optionOrPrompt([{
+              type: 'confirm',
+              name: 'install',
+              message: 'Install dependencies',
+              "default": true
+            }, {
+              type: 'confirm',
+              name: 'use_asar_bool',
+              message: 'Use ASAR? (kinda sucks)',
+              "default": false
+            }, {
+              type: 'confirm',
+              name: 'github_action_publish',
+              message: 'Include github publish script?',
+              "default": false
+            }]);
 
-    if (github_action_publish) {
-      const _yield$yo$optionOrPro2 = yield yo.optionOrPrompt([{
-        type: 'input',
-        name: 'bucket',
-        message: 'S3 bucket to publish to (remember to allow public ACLs on this bucket!)',
-        default: yo.answers.name
-      }]),
+          case 6:
+            _yield$yo$optionOrPro = _context.sent;
+            install = _yield$yo$optionOrPro.install;
+            main = _yield$yo$optionOrPro.main;
+            use_asar_bool = _yield$yo$optionOrPro.use_asar_bool;
+            github_action_publish = _yield$yo$optionOrPro.github_action_publish;
+            yo.answers.install = install;
+            yo.answers.use_asar_bool = use_asar_bool;
+            yo.answers.github_action_publish = github_action_publish;
+            yo.answers.main = main;
+
+            if (!github_action_publish) {
+              _context.next = 21;
+              break;
+            }
+
+            _context.next = 18;
+            return yo.optionOrPrompt([{
+              type: 'input',
+              name: 'bucket',
+              message: 'S3 bucket to publish to (remember to allow public ACLs on this bucket!)',
+              "default": yo.answers.name
+            }]);
+
+          case 18:
+            _yield$yo$optionOrPro2 = _context.sent;
             bucket = _yield$yo$optionOrPro2.bucket;
+            yo.answers.bucket = bucket;
 
-      yo.answers.bucket = bucket;
-    }
+          case 21:
+            yo.context = _objectSpread(_objectSpread({}, yo.context), yo.answers);
 
-    yo.context = _objectSpread(_objectSpread({}, yo.context), yo.answers);
-  });
+          case 22:
+          case "end":
+            return _context.stop();
+        }
+      }
+    }, _callee);
+  }));
   return _prompting.apply(this, arguments);
 }
-
-module.exports = exports.default;

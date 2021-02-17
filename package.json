@@ -27,7 +27,7 @@
     "unlink": "npm unlink generator-electron-react"
   },
   "dependencies": {
-    "fs-extra": "^8.1.0",
+    "fs-extra": "^9.1.0",
     "generator-github-project": "^0.2.11",
     "lodash": "^4.17.11",
     "project-guess": "^0.2.5",
@@ -41,10 +41,8 @@
     "@babel/node": "^7.8.4",
     "@babel/preset-env": "^7.4.5",
     "babel-eslint": "^10.0.1",
-    "babel-plugin-add-module-exports": "^1.0.2",
-    "babel-preset-everything": "^0.3.1",
-    "eslint": "^5.16.0",
-    "yo": "^2.0.6"
+    "eslint": "^7.20.0",
+    "yo": "^3.1.1"
   },
   "author": {
     "name": "wizebin",
