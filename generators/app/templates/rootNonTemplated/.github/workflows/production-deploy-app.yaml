@@ -1,0 +1,63 @@
+name: Deploy Electron To Production
+
+on:
+  push:
+    branches: [ master, main, production ]
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest] # macos is expensive, remove it if that's an issue
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14
+
+      - name: Install dependencies
+        run: |
+          npm install
+
+      - name: Change deployment variables to environment
+        run: |
+          npm run initialize-packaging-production
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-east-2
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Add MacOS certs
+        if: matrix.os == 'macos-latest'
+        run: chmod +x ./build/helpers/installMacCertificate.sh && ./build/helpers/installMacCertificate.sh
+        env:
+          CERTIFICATE_OSX_APPLICATION: ${{ secrets.CERTIFICATE_OSX_APPLICATION }}
+          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+
+      - name: Build/release MACOS Electron app
+        if: startsWith(matrix.os,'macos')
+        env:
+          API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          API_KEY_ISSUER_ID: ${{ secrets.APPLE_API_KEY_ISSUER_ID }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+        run: |
+          npm run package-ci
+
+      - name: Build/release WINDOWS Electron app
+        if: startsWith(matrix.os,'win')
+        env:
+          CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_SIGNING_PASS }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          npm run package-ci

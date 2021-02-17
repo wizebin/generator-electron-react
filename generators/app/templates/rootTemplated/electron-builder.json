@@ -1,12 +1,13 @@
 {
-  "productName": "<%= name %>",
-  "appId": "com.<%= name %>",
+  "productName": "CONFIGURED BY npm run initialize-packaging-production",
+  "appId": "CONFIGURED BY npm run initialize-packaging-production",
   "asar": <%= use_asar_bool %>,
   "files": [
     "**/dist/**",
     "package.json",
     ".env",
     "!src/*",
+    "!electron/*",
     "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
     "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
     "!**/node_modules/*.d.ts",
@@ -21,16 +22,8 @@
   ],
   "dmg": {
     "contents": [
-      {
-        "x": 130,
-        "y": 220
-      },
-      {
-        "x": 410,
-        "y": 220,
-        "type": "link",
-        "path": "/Applications"
-      }
+      { "x": 130, "y": 220 },
+      { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
     ]
   },
   "win": {
@@ -41,6 +34,7 @@
   "mac": {
     "hardenedRuntime": true,
     "type": "distribution",
+    "entitlements": "build/entitlements.mac.plist",
     "extendInfo": {
       "NSAppTransportSecurity": {
         "NSAllowsArbitraryLoads": true
@@ -66,5 +60,6 @@
       "<%= name %>"
     ]
   },
+  "publish": { "provider": "CONFIGURED BY npm run initialize-packaging-production" },
   "afterSign": "./build/helpers/notarize.js"
 }

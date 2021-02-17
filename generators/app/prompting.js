@@ -50,14 +50,34 @@ function _prompting() {
       name: 'use_asar_bool',
       message: 'Use ASAR? (kinda sucks)',
       default: false
+    }, {
+      type: 'confirm',
+      name: 'github_action_publish',
+      message: 'Include github publish script?',
+      default: false
     }]),
           install = _yield$yo$optionOrPro.install,
           main = _yield$yo$optionOrPro.main,
-          use_asar_bool = _yield$yo$optionOrPro.use_asar_bool;
+          use_asar_bool = _yield$yo$optionOrPro.use_asar_bool,
+          github_action_publish = _yield$yo$optionOrPro.github_action_publish;
 
     yo.answers.install = install;
     yo.answers.use_asar_bool = use_asar_bool;
+    yo.answers.github_action_publish = github_action_publish;
     yo.answers.main = main;
+
+    if (github_action_publish) {
+      const _yield$yo$optionOrPro2 = yield yo.optionOrPrompt([{
+        type: 'input',
+        name: 'bucket',
+        message: 'S3 bucket to publish to (remember to allow public ACLs on this bucket!)',
+        default: yo.answers.name
+      }]),
+            bucket = _yield$yo$optionOrPro2.bucket;
+
+      yo.answers.bucket = bucket;
+    }
+
     yo.context = _objectSpread(_objectSpread({}, yo.context), yo.answers);
   });
   return _prompting.apply(this, arguments);
