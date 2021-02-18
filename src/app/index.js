@@ -21,11 +21,14 @@ export default class Gen extends Generator {
     this.fs.copyTpl(
       this.templatePath('rootTemplated'),
       this.destinationPath(),
-      this.context
+      this.context,
+      {},
+      { globOptions: {dot: true} }
     );
     await fs.copy(
       this.templatePath('rootNonTemplated'),
-      this.destinationPath()
+      this.destinationPath(),
+      { globOptions: {dot: true} },
     );
     // this.directory(this.templatePath(), './');
   }
