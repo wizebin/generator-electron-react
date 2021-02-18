@@ -76,9 +76,17 @@ var Gen = /*#__PURE__*/function (_Generator) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
-                this.fs.copyTpl(this.templatePath('rootTemplated'), this.destinationPath(), this.context);
+                this.fs.copyTpl(this.templatePath('rootTemplated'), this.destinationPath(), this.context, {}, {
+                  globOptions: {
+                    dot: true
+                  }
+                });
                 _context.next = 3;
-                return _fsExtra["default"].copy(this.templatePath('rootNonTemplated'), this.destinationPath());
+                return _fsExtra["default"].copy(this.templatePath('rootNonTemplated'), this.destinationPath(), {
+                  globOptions: {
+                    dot: true
+                  }
+                });
 
               case 3:
               case "end":
