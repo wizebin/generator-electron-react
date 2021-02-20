@@ -26,8 +26,8 @@ export default async function prompting(yo) {
     {
       type: 'confirm',
       name: 'use_asar_bool',
-      message: 'Use ASAR? (kinda sucks)',
-      default: false
+      message: 'Use ASAR?',
+      default: true
     },
     {
       type: 'confirm',

@@ -58,8 +58,8 @@ function _prompting() {
             }, {
               type: 'confirm',
               name: 'use_asar_bool',
-              message: 'Use ASAR? (kinda sucks)',
-              "default": false
+              message: 'Use ASAR?',
+              "default": true
             }, {
               type: 'confirm',
               name: 'github_action_publish',
