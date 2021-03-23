@@ -22,6 +22,7 @@
       "name": "Jest Test Current File",
       "program": "${workspaceRoot}/node_modules/jest/bin/jest.js",
       "internalConsoleOptions": "openOnSessionStart",
+      "outputCapture": "std",
       "args": [
         "${file}"
       ]
