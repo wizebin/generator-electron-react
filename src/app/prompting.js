@@ -53,6 +53,8 @@ export default async function prompting(yo) {
     ]);
 
     yo.answers.bucket = bucket;
+  } else {
+    yo.answers.bucket = '';
   }
 
 
