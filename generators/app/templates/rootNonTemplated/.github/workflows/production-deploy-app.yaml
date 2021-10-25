@@ -25,6 +25,15 @@ jobs:
         run: |
           npm install
 
+      # uncomment this step if you want to install private npm packages
+      # - name: Install dependencies
+      #   run: |
+      #     cp ./build/helpers/npmrcTemplate ./.npmrc
+      #     npm install
+      #     rm .npmrc
+      #   env:
+      #     NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+
       - name: Change deployment variables to environment
         run: |
           npm run initialize-packaging-production
