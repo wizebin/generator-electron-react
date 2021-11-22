@@ -81,6 +81,11 @@ module.exports = {
             mimetype: 'application/font-woff'
           }
         }
+      }, {
+        test: /\.(sql|txt|csv|tsv|bin)$/,
+        use: {
+          loader: 'raw-loader'
+        }
       }
     ]
   },

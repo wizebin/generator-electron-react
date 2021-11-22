@@ -3,15 +3,15 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = prompting;
+exports.default = prompting;
 
 var _yoBasePrompts = _interopRequireDefault(require("yo-base-prompts"));
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { keys.push.apply(keys, Object.getOwnPropertySymbols(object)); } if (enumerableOnly) keys = keys.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); return keys; }
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { if (i % 2) { var source = arguments[i] != null ? arguments[i] : {}; ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(arguments[i])); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(arguments[i], key)); }); } } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -24,87 +24,62 @@ function prompting(_x) {
 }
 
 function _prompting() {
-  _prompting = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(yo) {
-    var yoBasePrompts, _yield$yo$optionOrPro, install, main, use_asar_bool, github_action_publish, _yield$yo$optionOrPro2, bucket;
+  _prompting = _asyncToGenerator(function* (yo) {
+    var yoBasePrompts = new _yoBasePrompts.default(yo);
+    yo.answers = yield yoBasePrompts.prompt({
+      authorEmail: true,
+      authorName: true,
+      authorUrl: true,
+      description: true,
+      destination: true,
+      githubUsername: true,
+      homepage: true,
+      license: true,
+      name: true,
+      repository: true,
+      version: true
+    });
+    var {
+      install,
+      main,
+      use_asar_bool,
+      github_action_publish
+    } = yield yo.optionOrPrompt([{
+      type: 'confirm',
+      name: 'install',
+      message: 'Install dependencies',
+      default: true
+    }, {
+      type: 'confirm',
+      name: 'use_asar_bool',
+      message: 'Use ASAR?',
+      default: true
+    }, {
+      type: 'confirm',
+      name: 'github_action_publish',
+      message: 'Include github publish script?',
+      default: false
+    }]);
+    yo.answers.install = install;
+    yo.answers.use_asar_bool = use_asar_bool;
+    yo.answers.github_action_publish = github_action_publish;
+    yo.answers.main = main;
 
-    return regeneratorRuntime.wrap(function _callee$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            yoBasePrompts = new _yoBasePrompts["default"](yo);
-            _context.next = 3;
-            return yoBasePrompts.prompt({
-              authorEmail: true,
-              authorName: true,
-              authorUrl: true,
-              description: true,
-              destination: true,
-              githubUsername: true,
-              homepage: true,
-              license: true,
-              name: true,
-              repository: true,
-              version: true
-            });
+    if (github_action_publish) {
+      var {
+        bucket
+      } = yield yo.optionOrPrompt([{
+        type: 'input',
+        name: 'bucket',
+        message: 'S3 bucket to publish to (remember to allow public ACLs on this bucket!)',
+        default: yo.answers.name
+      }]);
+      yo.answers.bucket = bucket;
+    } else {
+      yo.answers.bucket = '';
+    }
 
-          case 3:
-            yo.answers = _context.sent;
-            _context.next = 6;
-            return yo.optionOrPrompt([{
-              type: 'confirm',
-              name: 'install',
-              message: 'Install dependencies',
-              "default": true
-            }, {
-              type: 'confirm',
-              name: 'use_asar_bool',
-              message: 'Use ASAR?',
-              "default": true
-            }, {
-              type: 'confirm',
-              name: 'github_action_publish',
-              message: 'Include github publish script?',
-              "default": false
-            }]);
-
-          case 6:
-            _yield$yo$optionOrPro = _context.sent;
-            install = _yield$yo$optionOrPro.install;
-            main = _yield$yo$optionOrPro.main;
-            use_asar_bool = _yield$yo$optionOrPro.use_asar_bool;
-            github_action_publish = _yield$yo$optionOrPro.github_action_publish;
-            yo.answers.install = install;
-            yo.answers.use_asar_bool = use_asar_bool;
-            yo.answers.github_action_publish = github_action_publish;
-            yo.answers.main = main;
-
-            if (!github_action_publish) {
-              _context.next = 21;
-              break;
-            }
-
-            _context.next = 18;
-            return yo.optionOrPrompt([{
-              type: 'input',
-              name: 'bucket',
-              message: 'S3 bucket to publish to (remember to allow public ACLs on this bucket!)',
-              "default": yo.answers.name
-            }]);
-
-          case 18:
-            _yield$yo$optionOrPro2 = _context.sent;
-            bucket = _yield$yo$optionOrPro2.bucket;
-            yo.answers.bucket = bucket;
-
-          case 21:
-            yo.context = _objectSpread(_objectSpread({}, yo.context), yo.answers);
-
-          case 22:
-          case "end":
-            return _context.stop();
-        }
-      }
-    }, _callee);
-  }));
+    yo.context = _objectSpread({}, yo.context, {}, yo.answers);
+  });
   return _prompting.apply(this, arguments);
 }

@@ -3,7 +3,7 @@ import './App.css';
 import 'typeface-roboto/index.css';
 import { listenForIpcMessages, stopListeningForIpcMessages } from './controller/ipc';
 import Home from './pages/Home';
-import fixPath from 'fix-path';
+import StateLoader from './scaffolding/StateLoader';
 
 export default class App extends React.Component {
   logMainMessages = (sender, { data }) => {
@@ -12,7 +12,6 @@ export default class App extends React.Component {
 
   componentDidMount() {
     listenForIpcMessages('consolelog', this.logMainMessages);
-    fixPath();
   }
 
   componentWillUnmount() {
@@ -20,6 +19,6 @@ export default class App extends React.Component {
   }
 
   render() {
-    return <Home />;
+    return <StateLoader><Home /></StateLoader>;
   }
 }
