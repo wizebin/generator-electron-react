@@ -82,7 +82,7 @@ module.exports = {
           }
         }
       }, {
-        test: /\.(sql|txt|csv|tsv|bin)$/,
+        test: /\.(sql|txt|csv|tsv|bin|raw)$/,
         use: {
           loader: 'raw-loader'
         }
@@ -106,7 +106,6 @@ module.exports = {
   },
   plugins: basePlugins.concat([
     new webpack.EnvironmentPlugin({
-      'NODE_ENV': process.env.NODE_ENV,
       'RUNTIME': runtime,
     }),
     new HtmlWebPackPlugin({
@@ -115,7 +114,7 @@ module.exports = {
     }),
   ]),
   devServer: {
-    contentBase: rendererOutputFolder,
+    static: rendererOutputFolder,
     hot: true,
     port: 10113,
   },

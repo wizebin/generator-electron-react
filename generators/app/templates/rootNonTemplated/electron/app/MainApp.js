@@ -3,30 +3,67 @@ import fs from 'fs';
 import getDistPath from '../utilities/getDistPath';
 import { BrowserWindow, app, dialog } from 'electron';
 import { v4 as uuid } from 'uuid';
-import { isWindows } from '../utilities/platform';
+import { isMac, isWindows } from '../utilities/platform';
 import { autoUpdater } from 'electron-updater';
 import createMainMenu from '../menu/createMainMenu';
 import { checkForAppUpdate } from '../utilities/update';
 import builderJson from '../../electron-builder.json';
 import { searchArgvForUrl } from '../utilities/searchArgvForUrl';
 import { relaunchMain } from '../utilities/relaunchMain';
+import { makeJsonRequest } from '../../src/utilities/makeRequest';
+import { createTray } from '../tray/tray';
+
+async function loadUrlWhenAvailable(subjectWindow, indexPath, maxRetries = 50, timeoutPerRetry = 100) {
+  for (let dex = 0; dex < maxRetries; dex += 1) {
+    try {
+      await subjectWindow?.loadURL(indexPath);
+      break;
+    } catch (err) {
+      console.log('failed to load main url (probably still initializing)');
+      await new Promise(resolve => setTimeout(resolve, timeoutPerRetry));
+    }
+  }
+}
+
+async function loadFileOrUrl(subjectWindow, indexPath) {
+  if (fs.existsSync(indexPath.replace(/^\s*file:\/\//, ''))) {
+    try {
+      await subjectWindow.loadFile(indexPath);
+    } catch (err) {
+      const messageBoxOptions = { type: 'error', title: 'Could not load index.html, is the path correct?' };
+      dialog.showMessageBox(messageBoxOptions).then(() => {
+        // process.exit(1);
+      });
+    }
+  } else {
+    return loadUrlWhenAvailable(subjectWindow, indexPath);
+  }
+}
 
 export default class MainApp {
   mainwindow = null;
   subwindows = {};
   tray = null;
   deepLinkUrl = null;
+  isTrayApp = false;
 
-  loadUrlWhenAvailable = async (indexPath, maxRetries = 50, timeoutPerRetry = 100) => {
-    for (let dex = 0; dex < maxRetries; dex += 1) {
-      try {
-        await this.mainwindow?.loadURL(indexPath);
-        break;
-      } catch (err) {
-        console.log('failed to load main url (probably still initializing)');
-        await new Promise(resolve => setTimeout(resolve, timeoutPerRetry));
+  constructor(asTrayApp = false) {
+    this.isTrayApp = asTrayApp;
+
+    app.on('before-quit', (event) => {
+      if (this.isTrayApp) {
+        if (!this.confirmQuitSync()) {
+          event.preventDefault();
+          return 0;
+        } // else quitting
       }
-    }
+    });
+
+    app.on('window-all-closed', () => {
+      if (this.isTrayApp) {
+        this.hideDock();
+      }
+    });
   }
 
   initializeDeepLinking = (linkProtocol) => {
@@ -59,29 +96,81 @@ export default class MainApp {
     return false;
   }
 
-  createMainWindow = (indexPath = process.env.HTML_SERVER_URL) => {
-    if (this.mainwindow) {
-      return this.mainwindow;
+  getLoadedUrl = () => {
+    return this.loadedPath;
+  }
+
+  showLoadedUrl = () => {
+    dialog.showMessageBox({ type: 'info', message: `Loaded URL: ${this.mainwindow?.webContents?.getURL?.()}` });
+  }
+
+  reloadRenderer = () => {
+    return loadFileOrUrl(this.mainwindow, this.mainwindow?.primaryPath);
+  }
+
+  showInspectorWindow = async (port = 9229) => {
+    const rawInfoUrl = `http://127.0.0.1:${port}/json`;
+    try {
+      const rawInfo = await makeJsonRequest(rawInfoUrl);
+      const info = await rawInfo.data?.[0];
+      const { description, devtoolsFrontendUrl, devtoolsFrontendUrlCompat, faviconUrl, id, title, type, url, webSocketDebuggerUrl } = info;
+
+      if (devtoolsFrontendUrl) {
+        this.createWindow(devtoolsFrontendUrl);
+      } else {
+        dialog.showMessageBox({ type: 'error', message: `Could not inspect ${port}, you may need to rerun your node program with --debug or --inspect, (${rawInfo.status}, ${rawInfo.data})` });
+      }
+    } catch (err) {
+      dialog.showMessageBox({ type: 'error', message: `Failed to inspect ${port}, you may need to rerun your node program with --debug or --inspect, (${err?.message})` });
     }
+  }
 
-    this.initializeDeepLinking();
+  showBasicInfo = () => {
+    const rows = [
+      `<div>App version ${app.getVersion()}</div>`,
+      `<div>App name ${app.name}</div>`,
+      `<div>App path ${app.getAppPath()}</div>`,
+      `<div>App exe path ${app.getPath('exe')}</div>`,
+      `<div>App user data path ${app.getPath('userData')}</div>`,
+      `<div>App user cache path ${app.getPath('cache')}</div>`,
+      `<div>App user desktop path ${app.getPath('desktop')}</div>`,
+      `<div>App user documents path ${app.getPath('documents')}</div>`,
+      `<div>App user downloads path ${app.getPath('downloads')}</div>`,
+      `<div>App user music path ${app.getPath('music')}</div>`,
+      `<div>App user pictures path ${app.getPath('pictures')}</div>`,
+      `<div>App user videos path ${app.getPath('videos')}</div>`,
+      `<div>App user temp path ${app.getPath('temp')}</div>`,
+      `<div>App user home path ${app.getPath('home')}</div>`,
+    ];
+    this.createWindowWithContent(rows.join('\n'));
+  }
 
-    this.mainwindow = new BrowserWindow({
+  createWindow = async (indexPath) => {
+    const resultWindow = this.createBareWindow();
+    resultWindow.primaryPath = indexPath;
+    await loadFileOrUrl(resultWindow, indexPath);
+    return resultWindow;
+  }
+
+  createWindowWithContent = async (content) => {
+    const resultWindow = this.createBareWindow();
+    loadUrlWhenAvailable(resultWindow, `data:text/html;charset=utf-8,${content}`);
+    return resultWindow;
+  }
+
+  createBareWindow = () => {
+    let resultWindow = new BrowserWindow({
       width: 900,
       height: 600,
-      webPreferences: { nodeIntegration: true, enableRemoteModule: true, worldSafeExecuteJavaScript: true, contextIsolation: false },
+      webPreferences: { nodeIntegration: true, enableRemoteModule: true, worldSafeExecuteJavaScript: true, contextIsolation: false, webSecurity: false },
       show: false, // wait until page is loaded
     });
 
-    this.menu = createMainMenu();
-
-    this.mainwindow.once('ready-to-show', () => {
-      this.mainwindow.show();
+    resultWindow.once('ready-to-show', () => {
+      resultWindow.show();
     });
 
-    this.mainwindow.webContents.on('ipc-message', this.onIpcMessageFromRenderer);
-
-    this.mainwindow.on('render-process-gone', (event, details) => {
+    resultWindow.on('render-process-gone', (event, details) => {
       const { reason } = details;
 
       console.log('renderer process gone', reason);
@@ -107,20 +196,35 @@ export default class MainApp {
       }
     });
 
-    this.mainwindow.uuid = uuid();
-    if (indexPath) {
-      this.loadUrlWhenAvailable(indexPath);
-    } else {
-      const htmlPath = path.join(getDistPath(), 'renderer', 'index.html');
-      if (!fs.existsSync(htmlPath)) {
-        const messageBoxOptions = { type: 'error', title: 'Could not load index.html, is the path correct?' };
-        dialog.showMessageBox(messageBoxOptions).then(() => {
-          process.exit(1);
-        });
-      }
-      this.mainwindow.loadFile(htmlPath);
+    resultWindow.uuid = uuid();
+
+    resultWindow.on('closed', () => {
+      resultWindow = null;
+    });
+    return resultWindow;
+  }
+
+  createMainWindow = async (indexPath = process.env.HTML_SERVER_URL) => {
+    if (this.mainwindow) {
+      return this.mainwindow;
     }
 
+    const htmlPath = path.join(getDistPath(), 'renderer', 'index.html');
+    this.mainwindow = await this.createWindow(indexPath || htmlPath);
+    this.initializeDeepLinking();
+    this.menu = createMainMenu(this);
+    this.mainwindow.webContents.on('ipc-message', this.onIpcMessageFromRenderer);
+
+    if (this.isTrayApp) {
+      this.setupAppAsTray();
+    } else {
+      this.setupAppAsNonTray();
+    }
+
+    return this.mainwindow;
+  }
+
+  setupAppAsNonTray = () => {
     if (isWindows()) {
       this.mainwindow.on('close', (event) => {
         process.exit(0);
@@ -128,10 +232,42 @@ export default class MainApp {
     }
 
     this.mainwindow.on('closed', () => {
-      this.appReady = false;
       this.mainwindow = null;
+      this.appReady = false;
     });
-    return this.mainwindow;
+  }
+
+  setupAppAsTray = async () => {
+    if (isWindows()) {
+      this.mainwindow.on('close', (event) => {
+        event.preventDefault();
+        this.mainwindow.destroy();
+        this.mainwindow = null;
+      });
+    }
+
+    this.mainwindow.on('closed', () => {
+      this.mainwindow = null;
+      this.appReady = null;
+    });
+
+    this.showDock();
+  }
+
+  showDock = () => {
+    if (isMac()) app.dock.show();
+  }
+
+  hideDock = () => {
+    if (isMac()) app.dock.hide();
+  }
+
+  createTray = () => {
+    if (!this.tray) {
+      this.tray = createTray({ showWindow: () => this.createOrShowMainWindow(), quit: this.quit, exampleAction: () => dialog.showMessageBox({ type: 'info', message: 'Example action' }) });
+    }
+
+    return this.tray;
   }
 
   createOrShowMainWindow = (deepLinkUrl) => {
@@ -140,11 +276,25 @@ export default class MainApp {
     }
 
     if (!this.mainwindow) {
-      this.createMainWindow();
+      return this.createMainWindow();
     } else {
       this.mainwindow.show();
       this.mainwindow.focus();
     }
+  }
+
+  confirmQuitSync = () => {
+    let result = false;
+
+    const buttons = [
+      { title: 'Quit Immediately', action: () => (result = true) },
+      { title: 'Leave Program Running', action: () => (result = false) },
+    ];
+    const message = 'This will stop all background actions!';
+
+    this.showOptionDialog(message, buttons);
+
+    return result;
   }
 
   quit = () => {
@@ -167,11 +317,20 @@ export default class MainApp {
     return false;
   }
 
-  onIpcMessageFromRenderer = (event, channel, ...args) => {
+  onIpcMessageFromRenderer = async (event, channel, ...args) => {
     console.log('got ipc message in main', channel);
     if (channel === 'app-ready') {
       this.appReady = true;
       this.sendDeepLinkUrl();
+    } else if (channel === 'url') {
+      console.log('got message', channel, args);
+      const currentPage = this.mainwindow.webContents.getURL();
+      try {
+        await this.mainwindow.loadURL(args[0]);
+      } catch (err) {
+        console.log('failed to load url, attempting to load prior', currentPage);
+        await this.mainwindow.loadURL(currentPage);
+      }
     }
   }
 
@@ -223,6 +382,9 @@ export default class MainApp {
   initialize = () => {
     this.monkeyPatchConsoleLog();
     this.createOrShowMainWindow();
+    if (this.isTrayApp) {
+      this.createTray();
+    }
     this.startAutoUpdater();
   }
 }

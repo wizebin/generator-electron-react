@@ -63,6 +63,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.16.0",
+    "@babel/eslint-parser": "^7.16.3",
     "@babel/node": "^7.16.0",
     "@babel/plugin-proposal-class-properties": "^7.16.0",
     "@babel/plugin-proposal-optional-chaining": "^7.16.0",
@@ -71,7 +72,6 @@
     "@babel/preset-env": "^7.16.4",
     "@babel/preset-react": "^7.16.0",
     "@babel/register": "^7.16.0",
-    "babel-eslint": "^10.1.0",
     "babel-loader": "^8.2.3",
     "concurrently": "^6.4.0",
     "copy-node-modules": "^1.1.1",

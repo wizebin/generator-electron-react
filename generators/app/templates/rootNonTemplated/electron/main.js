@@ -11,7 +11,7 @@ if (!app.requestSingleInstanceLock()) {
 
 initializeRemote();
 
-const mainApp = new MainApp();
+const mainApp = new MainApp(false);
 
 // stop screen flashing on osx
 app.commandLine.appendSwitch('disable-backgrounding-occluded-windows', 'true');

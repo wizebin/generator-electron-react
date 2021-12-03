@@ -10,11 +10,8 @@
         "SharedArrayBuffer": "readonly",
         "document": "readonly"
     },
-    "parser": "babel-eslint",
-    "parserOptions": {
-        "ecmaVersion": 2018,
-        "sourceType": "module"
-    },
+    "presets": ["@babel/preset-react"],
+    "parser": "@babel/eslint-parser",
     "plugins": [
         "jest",
         "react"
@@ -29,7 +26,7 @@
         "semi": ["error", "always"],
         "quotes": ["error", "single"],
         "indent": ["error", 2],
-        "eqeqeq": "error",
+        "eq-eq-eq": "error",
         "require-await": "error",
         "no-extend-native": "error",
         "no-multi-spaces": "error",

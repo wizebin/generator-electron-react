@@ -23,6 +23,11 @@ module.exports = {
             ]
           }
         }]
+      }, {
+        test: /\.(sql|txt|csv|tsv|bin|raw)$/,
+        use: {
+          loader: 'raw-loader'
+        }
       }
     ]
   },
