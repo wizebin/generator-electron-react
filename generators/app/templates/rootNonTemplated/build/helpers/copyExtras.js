@@ -30,6 +30,7 @@ function makeBaseDirectories() {
 
 function copyResources() {
   fs.copySync(path.join(root, 'electron', 'resources'), resourcesPath);
+  fs.copySync(path.join(root, 'build', 'resources'), resourcesPath);
 }
 
 makeBaseDirectories();
