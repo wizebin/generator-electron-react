@@ -1,7 +1,5 @@
 import { app, dialog } from 'electron';
-
 import MainApp from './app/MainApp';
-import { isMac } from './utilities/platform';
 import { searchArgvForUrl } from './utilities/searchArgvForUrl';
 import { initialize as initializeRemote } from '@electron/remote/main';
 
@@ -17,13 +15,6 @@ const mainApp = new MainApp(false);
 app.commandLine.appendSwitch('disable-backgrounding-occluded-windows', 'true');
 
 app.on('ready', mainApp.initialize);
-
-// close the application in anything other than osx
-app.on('window-all-closed', () => {
-  if (!isMac()) {
-    process.exit(0);
-  }
-});
 
 app.on('activate', () => {
   mainApp.createOrShowMainWindow();

@@ -46,6 +46,7 @@ export default class MainApp {
   tray = null;
   deepLinkUrl = null;
   isTrayApp = false;
+  // sharedState = singleton(); // uncomment with your global state, I use mutastate
 
   constructor(asTrayApp = false) {
     this.isTrayApp = asTrayApp;
@@ -56,6 +57,8 @@ export default class MainApp {
           event.preventDefault();
           return 0;
         } // else quitting
+      } else if (!isMac()) {
+        process.exit(0);
       }
     });
 
@@ -170,6 +173,8 @@ export default class MainApp {
       resultWindow.show();
     });
 
+    resultWindow.webContents.on('ipc-message', this.onIpcMessageFromRenderer);
+
     resultWindow.on('render-process-gone', (event, details) => {
       const { reason } = details;
 
@@ -197,9 +202,12 @@ export default class MainApp {
     });
 
     resultWindow.uuid = uuid();
+    const id = resultWindow.id;
+    this.subwindows[id] = resultWindow;
 
     resultWindow.on('closed', () => {
       resultWindow = null;
+      delete this.subwindows[id];
     });
     return resultWindow;
   }
@@ -209,11 +217,9 @@ export default class MainApp {
       return this.mainwindow;
     }
 
-    const htmlPath = path.join(getDistPath(), 'renderer', 'index.html');
-    this.mainwindow = await this.createWindow(indexPath || htmlPath);
+    this.mainwindow = await this.createSecondaryMainWindow(indexPath);
     this.initializeDeepLinking();
     this.menu = createMainMenu(this);
-    this.mainwindow.webContents.on('ipc-message', this.onIpcMessageFromRenderer);
 
     if (this.isTrayApp) {
       this.setupAppAsTray();
@@ -222,6 +228,12 @@ export default class MainApp {
     }
 
     return this.mainwindow;
+  }
+
+  createSecondaryMainWindow = async (indexPath = process.env.HTML_SERVER_URL) => {
+    const htmlPath = path.join(getDistPath(), 'renderer', 'index.html');
+    const window = await this.createWindow(indexPath || htmlPath);
+    return window;
   }
 
   setupAppAsNonTray = () => {
@@ -264,7 +276,7 @@ export default class MainApp {
 
   createTray = () => {
     if (!this.tray) {
-      this.tray = createTray({ showWindow: () => this.createOrShowMainWindow(), quit: this.quit, exampleAction: () => dialog.showMessageBox({ type: 'info', message: 'Example action' }) });
+      this.tray = createTray({ showWindow: () => this.createOrShowMainWindow(), quit: this.quit, showDebugger: () => this.showInspectorWindow() });
     }
 
     return this.tray;
@@ -317,13 +329,48 @@ export default class MainApp {
     return false;
   }
 
+  sendMessageToAllWindows = (type, dataKey, value) => {
+    const windowKeys = Object.keys(this.subwindows);
+    for (let key of windowKeys) {
+      const window = this.subwindows[key];
+      window.webContents.send(type, dataKey, value);
+    }
+  }
+
+  sendMessageToAllOtherWindows = (type, data, originatorId) => {
+    const windowKeys = Object.keys(this.subwindows);
+    for (let key of windowKeys) {
+      const window = this.subwindows[key];
+      if (key !== originatorId) {
+        window.webContents.send(type, data);
+      }
+    }
+  }
+
   onIpcMessageFromRenderer = async (event, channel, ...args) => {
-    console.log('got ipc message in main', channel);
+    if (channel === 'state-sync') {
+      const data = args[0];
+      if (data?.key) {
+        this.sendMessageToAllOtherWindows(channel, data, `${event?.sender?.id}`);
+        if (this.stateReplicateReceiver) this.stateReplicateReceiver(data);
+      }
+
+      return true;
+    }
+
+    console.log('got ipc message in main', channel); // this is below state-sync because we don't want a billion state sync messages
     if (channel === 'app-ready') {
       this.appReady = true;
       this.sendDeepLinkUrl();
+    } else if (channel === 'open-node-debugger') {
+      this.showInspectorWindow(args[0]);
+    } else if (channel === 'request-update-check') {
+      checkForAppUpdate();
+    } else if (channel === 'request-state-sync') {
+      // event.reply('state-sync', { key: [], value: this.sharedState.getEverything() });
+    } else if (channel === 'secondary-window') {
+      this.createWindow(args[0]);
     } else if (channel === 'url') {
-      console.log('got message', channel, args);
       const currentPage = this.mainwindow.webContents.getURL();
       try {
         await this.mainwindow.loadURL(args[0]);
@@ -331,6 +378,8 @@ export default class MainApp {
         console.log('failed to load url, attempting to load prior', currentPage);
         await this.mainwindow.loadURL(currentPage);
       }
+    } else { // usually messages intended for renderer to renderer communication
+      this.sendMessageToAllOtherWindows(channel, args[0], `${event?.sender?.id}`);
     }
   }
 
@@ -379,12 +428,21 @@ export default class MainApp {
     checkForAppUpdate();
   }
 
-  initialize = () => {
+  initializeSharedState = async () => {
+    // load your state from disk here
+
+    // replicate your state with a mechanism like below
+    // const receiver = this.sharedState.replicate({ send: (change) => this.sendMessageToAllWindows('state-sync', change), primary: true });
+    // this.stateReplicateReceiver = receiver;
+  }
+
+  initialize = async () => {
     this.monkeyPatchConsoleLog();
-    this.createOrShowMainWindow();
+    await this.initializeSharedState(); // this should be executed before any windows are created
     if (this.isTrayApp) {
       this.createTray();
     }
+    this.createOrShowMainWindow();
     this.startAutoUpdater();
   }
 }

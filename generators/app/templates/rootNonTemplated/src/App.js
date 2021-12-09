@@ -12,10 +12,16 @@ export default class App extends React.Component {
 
   componentDidMount() {
     listenForIpcMessages('consolelog', this.logMainMessages);
+
+    // setup state sync here if you want it, example code uses mutastate
+    // const receiver = singleton().replicate({ send: data => sendIpcMessage('state-sync', data), primary: false, ignore: ['ephemeral', 'navigation'] });
+    // listenForIpcMessages('state-sync', (sender, data) => receiver(data));
+    // sendIpcMessage('request-state-sync');
   }
 
   componentWillUnmount() {
     stopListeningForIpcMessages('consolelog', this.logMainMessages);
+    // stopListeningForIpcMessages('state-sync', this.logMainMessages);
   }
 
   render() {
