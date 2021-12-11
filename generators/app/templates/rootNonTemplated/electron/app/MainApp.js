@@ -12,7 +12,6 @@ import { searchArgvForUrl } from '../utilities/searchArgvForUrl';
 import { relaunchMain } from '../utilities/relaunchMain';
 import { makeJsonRequest } from '../../src/utilities/makeRequest';
 import { createTray } from '../tray/tray';
-// import { singleton } from 'mutastate';
 import encodeUriObject from '../../src/utilities/encodeUriObject';
 
 async function loadUrlWhenAvailable(subjectWindow, indexPath, query, maxRetries = 50, timeoutPerRetry = 100) {
@@ -234,7 +233,7 @@ export default class MainApp {
   }
 
   createSecondaryMainWindow = async (indexPath = process.env.HTML_SERVER_URL, query) => {
-    const htmlPath = path.join(getDistPath(), 'renderer', 'index.html');
+    const htmlPath = path.join(getDistPath(), 'index.html');
     const window = await this.createWindow(indexPath || htmlPath, query);
     return window;
   }
@@ -438,16 +437,8 @@ export default class MainApp {
   }
 
   initializeSharedState = async () => {
-    // this.sharedState.setEverything({ app: { test: 33 } });
     // const receiver = this.sharedState.replicate({ send: (change) => this.sendMessageToAllWindows('state-sync', change), primary: true });
     // this.stateReplicateReceiver = receiver;
-
-    // this.sharedState.listen(['app', 'test'], { callback: () => {
-    //   const value = this.sharedState.get(['app', 'test']);
-    //   console.log('app.test changed', value);
-
-    //   this.menu = createMainMenu(this, `${value}`);
-    // } });
   }
 
   initialize = async () => {

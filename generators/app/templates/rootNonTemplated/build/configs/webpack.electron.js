@@ -2,6 +2,19 @@ const path = require('path');
 const webpack = require('webpack');
 const packagejson = require('../../package.json');
 const { dependencies: externals } = packagejson;
+const copyNodeModules = require('@wizebin/copy-node-modules');
+
+const root = path.resolve(path.join(__dirname, '..', '..'));
+const baseOutputFolder = path.join(root, 'dist');
+
+function copyNodeModulesAsync(source, destination, options) {
+  return new Promise((resolve, reject) => {
+    copyNodeModules(source, destination, options, (err, results) => {
+      if (err) reject(err);
+      else (resolve(results));
+    });
+  })
+}
 
 module.exports = {
   entry: './electron/main.js',
@@ -12,10 +25,9 @@ module.exports = {
         exclude: /node_modules/,
         use: [{
           loader: 'babel-loader',
-          options: { // using options here instead of using the root babelrc so we can have a different configuration
+          options: {
             presets: [[
               "@babel/preset-env", { targets: { electron: "12" } }],
-              "@babel/preset-react"
             ],
             plugins: [
               "@babel/plugin-proposal-class-properties",
@@ -40,11 +52,18 @@ module.exports = {
       }
     ]
   },
+  plugins: [
+    { apply: (compiler) => {
+      compiler.hooks.afterEmit.tap('AfterEmitPlugin', async (compilation) => {
+        await copyNodeModulesAsync(root, baseOutputFolder, { devDependencies: false, verbose: true, overwiteIfVersionChange: true });
+      });
+    } }
+  ],
   resolve: {
     extensions: ['*', '.js', '.jsx']
   },
   output: {
-    path: path.join(__dirname, '../..', 'dist'),
+    path: baseOutputFolder,
     publicPath: './',
     filename: 'electronMain.js',
     libraryTarget: 'commonjs2'
@@ -53,6 +72,7 @@ module.exports = {
     __dirname: false,
     __filename: false
   },
+  externalsPresets: { electronMain: true, node: true },
   externals: [...Object.keys(externals || {})],
   target: 'electron-main',
 };

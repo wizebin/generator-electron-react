@@ -26,8 +26,7 @@ if (!process.env.AS_WEB) {
 const baseEntry = path.resolve(path.join(__dirname, '..', '..', 'src', 'index.js'));
 const baseOutputFolder = path.resolve(path.join(__dirname, '..', '..', 'dist'));
 const baseMainFolder = path.resolve(path.join(__dirname, '..', '..', 'electron'));
-const rendererSubfolder = path.join('renderer');
-const rendererOutputFolder = path.join(baseOutputFolder, rendererSubfolder);
+const rendererOutputFolder = baseOutputFolder;
 const loaderPattern = path.posix.join('assets', '[name].[ext]');
 
 module.exports = {
@@ -117,6 +116,10 @@ module.exports = {
     static: rendererOutputFolder,
     hot: true,
     port: 10113,
+  },
+  externalsPresets: {
+    electronRenderer: true,
+    node: true,
   },
   devtool: 'source-map',
   target: process.env.AS_WEB ? undefined : 'electron-renderer',
