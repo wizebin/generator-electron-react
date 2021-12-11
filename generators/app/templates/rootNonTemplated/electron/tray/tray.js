@@ -1,9 +1,10 @@
-import { Tray, Menu } from 'electron';
-import getIcon from '../utilities/getIcon';
+import { Tray, Menu, nativeImage } from 'electron';
 import packagejson from '../../package.json';
+import icon from '../../build/resources/icon.png';
+import { resizedNativeImageFromImported } from '../utilities/icon';
 
 export function createTray({ showWindow, quit, ...rest }) {
-  const iconImage = getIcon('icon.png', 16, 16);
+  const iconImage = resizedNativeImageFromImported(icon, 16, 16);
   const tray = new Tray(iconImage);
   const template = [
     { icon: iconImage, label: 'Show Program', click: showWindow },

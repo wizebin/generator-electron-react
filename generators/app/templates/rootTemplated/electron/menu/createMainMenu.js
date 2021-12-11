@@ -32,7 +32,7 @@ export default function createMainMenu(mainApp) {
   };
 
   const menu = Menu.buildFromTemplate([{
-    label: win ? 'File' : 'nexuscript',
+    label: win ? 'File' : '<%= name %>',
     submenu: [
       ...(win ? [] : [{ role: 'about' }]),
       { type: 'separator' },

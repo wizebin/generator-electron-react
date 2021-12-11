@@ -64,21 +64,7 @@ function _prompting() {
     yo.answers.use_asar_bool = use_asar_bool;
     yo.answers.github_action_publish = github_action_publish;
     yo.answers.main = main;
-
-    if (github_action_publish) {
-      var {
-        bucket
-      } = yield yo.optionOrPrompt([{
-        type: 'input',
-        name: 'bucket',
-        message: 'S3 bucket to publish to (remember to allow public ACLs on this bucket!)',
-        default: yo.answers.name
-      }]);
-      yo.answers.bucket = bucket;
-    } else {
-      yo.answers.bucket = '';
-    }
-
+    yo.answers.bucket = '';
     yo.context = _objectSpread({}, yo.context, {}, yo.answers);
   });
   return _prompting.apply(this, arguments);

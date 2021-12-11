@@ -24,9 +24,18 @@ module.exports = {
           }
         }]
       }, {
-        test: /\.(sql|txt|csv|tsv|bin|raw)$/,
-        use: {
-          loader: 'raw-loader'
+        test: /\.(sql|txt|csv|tsv)$/,
+        type: 'asset/inline',
+        generator: {
+          dataUrl: content => {
+            return content.toString();
+          }
+        }
+      }, {
+        test: /\.(bin|raw|png|ico|svg|jpg|jpeg|gif)$/,
+        type: 'asset/inline',
+        generator: {
+          dataUrl: content => content
         }
       }
     ]

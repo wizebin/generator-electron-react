@@ -1,6 +1,6 @@
 {
-  "productName": "CONFIGURED BY npm run initialize-packaging-production",
-  "appId": "CONFIGURED BY npm run initialize-packaging-production",
+  "productName": "<%= name %>",
+  "appId": "com.example.test.<%= name %>",
   "asar": <%= use_asar_bool %>,
   "files": [
     "**/dist/**",
@@ -60,6 +60,11 @@
       "<%= name %>"
     ]
   },
-  "publish": { "provider": "CONFIGURED BY npm run initialize-packaging-production" },
+  "publish": {
+    "provider": "s3",
+    "bucket": "<%= authorName %>",
+    "acl": "public-read",
+    "path": "downloads/<%= name %>"
+  },
   "afterSign": "./build/helpers/notarize.js"
 }

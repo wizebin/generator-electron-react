@@ -34,10 +34,6 @@ jobs:
       #   env:
       #     NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
 
-      - name: Change deployment variables to environment
-        run: |
-          npm run initialize-packaging-production
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -60,7 +56,7 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
         run: |
-          npm run package-ci
+          npm run deploy
 
       - name: Build/release WINDOWS Electron app
         if: startsWith(matrix.os,'win')
@@ -69,4 +65,4 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          npm run package-ci
+          npm run deploy

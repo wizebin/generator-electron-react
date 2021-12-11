@@ -12,11 +12,14 @@ import { searchArgvForUrl } from '../utilities/searchArgvForUrl';
 import { relaunchMain } from '../utilities/relaunchMain';
 import { makeJsonRequest } from '../../src/utilities/makeRequest';
 import { createTray } from '../tray/tray';
+// import { singleton } from 'mutastate';
+import encodeUriObject from '../../src/utilities/encodeUriObject';
 
-async function loadUrlWhenAvailable(subjectWindow, indexPath, maxRetries = 50, timeoutPerRetry = 100) {
+async function loadUrlWhenAvailable(subjectWindow, indexPath, query, maxRetries = 50, timeoutPerRetry = 100) {
+  const fullUrl = query ? indexPath + '?' + encodeUriObject(query) : indexPath;
   for (let dex = 0; dex < maxRetries; dex += 1) {
     try {
-      await subjectWindow?.loadURL(indexPath);
+      await subjectWindow?.loadURL(fullUrl);
       break;
     } catch (err) {
       console.log('failed to load main url (probably still initializing)');
@@ -25,10 +28,10 @@ async function loadUrlWhenAvailable(subjectWindow, indexPath, maxRetries = 50, t
   }
 }
 
-async function loadFileOrUrl(subjectWindow, indexPath) {
+async function loadFileOrUrl(subjectWindow, indexPath, query) {
   if (fs.existsSync(indexPath.replace(/^\s*file:\/\//, ''))) {
     try {
-      await subjectWindow.loadFile(indexPath);
+      await subjectWindow.loadFile(indexPath, { query });
     } catch (err) {
       const messageBoxOptions = { type: 'error', title: 'Could not load index.html, is the path correct?' };
       dialog.showMessageBox(messageBoxOptions).then(() => {
@@ -36,7 +39,7 @@ async function loadFileOrUrl(subjectWindow, indexPath) {
       });
     }
   } else {
-    return loadUrlWhenAvailable(subjectWindow, indexPath);
+    return loadUrlWhenAvailable(subjectWindow, indexPath, query);
   }
 }
 
@@ -128,7 +131,7 @@ export default class MainApp {
     }
   }
 
-  showBasicInfo = () => {
+  showBasicInfo = async () => {
     const rows = [
       `<div>App version ${app.getVersion()}</div>`,
       `<div>App name ${app.name}</div>`,
@@ -148,10 +151,10 @@ export default class MainApp {
     this.createWindowWithContent(rows.join('\n'));
   }
 
-  createWindow = async (indexPath) => {
+  createWindow = async (indexPath, query) => {
     const resultWindow = this.createBareWindow();
     resultWindow.primaryPath = indexPath;
-    await loadFileOrUrl(resultWindow, indexPath);
+    await loadFileOrUrl(resultWindow, indexPath, query);
     return resultWindow;
   }
 
@@ -212,12 +215,12 @@ export default class MainApp {
     return resultWindow;
   }
 
-  createMainWindow = async (indexPath = process.env.HTML_SERVER_URL) => {
+  createMainWindow = async (indexPath = process.env.HTML_SERVER_URL, query) => {
     if (this.mainwindow) {
       return this.mainwindow;
     }
 
-    this.mainwindow = await this.createSecondaryMainWindow(indexPath);
+    this.mainwindow = await this.createSecondaryMainWindow(indexPath, query);
     this.initializeDeepLinking();
     this.menu = createMainMenu(this);
 
@@ -230,9 +233,9 @@ export default class MainApp {
     return this.mainwindow;
   }
 
-  createSecondaryMainWindow = async (indexPath = process.env.HTML_SERVER_URL) => {
+  createSecondaryMainWindow = async (indexPath = process.env.HTML_SERVER_URL, query) => {
     const htmlPath = path.join(getDistPath(), 'renderer', 'index.html');
-    const window = await this.createWindow(indexPath || htmlPath);
+    const window = await this.createWindow(indexPath || htmlPath, query);
     return window;
   }
 
@@ -276,7 +279,11 @@ export default class MainApp {
 
   createTray = () => {
     if (!this.tray) {
-      this.tray = createTray({ showWindow: () => this.createOrShowMainWindow(), quit: this.quit, showDebugger: () => this.showInspectorWindow() });
+      this.tray = createTray({
+        showWindow: () => this.createOrShowMainWindow(),
+        quit: this.quit,
+        showDebugger: () => this.showInspectorWindow()
+      });
     }
 
     return this.tray;
@@ -370,6 +377,8 @@ export default class MainApp {
       // event.reply('state-sync', { key: [], value: this.sharedState.getEverything() });
     } else if (channel === 'secondary-window') {
       this.createWindow(args[0]);
+    } else if (channel === 'subwindow') {
+      this.createSecondaryMainWindow(this.getLoadedUrl(), args[0]);
     } else if (channel === 'url') {
       const currentPage = this.mainwindow.webContents.getURL();
       try {
@@ -429,11 +438,16 @@ export default class MainApp {
   }
 
   initializeSharedState = async () => {
-    // load your state from disk here
-
-    // replicate your state with a mechanism like below
+    // this.sharedState.setEverything({ app: { test: 33 } });
     // const receiver = this.sharedState.replicate({ send: (change) => this.sendMessageToAllWindows('state-sync', change), primary: true });
     // this.stateReplicateReceiver = receiver;
+
+    // this.sharedState.listen(['app', 'test'], { callback: () => {
+    //   const value = this.sharedState.get(['app', 'test']);
+    //   console.log('app.test changed', value);
+
+    //   this.menu = createMainMenu(this, `${value}`);
+    // } });
   }
 
   initialize = async () => {
