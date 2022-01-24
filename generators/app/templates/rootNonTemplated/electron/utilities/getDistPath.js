@@ -6,7 +6,7 @@ import path from 'path';
  * @param {*} subpath
  */
 export default function getDistPath() {
-  if (process.env.WEBPACK_PREPROCESSOR_IS_PACKAGING) {
+  if (app.isPackaged) {
     return path.join(app.getAppPath(), 'dist');
   }
 
