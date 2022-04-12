@@ -7,20 +7,23 @@ const basePlugins = [];
 const runtime = process.env.AS_WEB ? 'web' : 'electron';
 
 if (!process.env.AS_WEB) {
-  basePlugins.push(new webpack.ExternalsPlugin('commonjs', [
-    'desktop-capturer',
-    'electron',
-    'ipc',
-    'ipc-renderer',
-    'native-image',
-    'remote',
-    'web-frame',
-    'clipboard',
-    'crash-reporter',
-    'screen',
-    'shell',
-    // ADD ANY MODULES THAT MUST REMAIN UNBUNDLED HERE
-  ].concat(Object.keys(packagejson.dependencies))));
+  basePlugins.push(new webpack.ExternalsPlugin({
+    // type: 'commonjs',
+    test: [
+      'desktop-capturer',
+      'electron',
+      'ipc',
+      'ipc-renderer',
+      'native-image',
+      'remote',
+      'web-frame',
+      'clipboard',
+      'crash-reporter',
+      'screen',
+      'shell',
+      // ADD ANY MODULES THAT MUST REMAIN UNBUNDLED HERE
+    ].concat(Object.keys(packagejson.dependencies))
+  } ));
 }
 
 const baseEntry = path.resolve(path.join(__dirname, '..', '..', 'src', 'index.js'));
